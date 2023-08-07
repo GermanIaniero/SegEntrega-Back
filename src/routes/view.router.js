@@ -9,7 +9,7 @@ const router = Router()
 router.get('/', async (req, res) => {
 
     const page = parseInt(req.query?.page || 1)
-    const limit = parseInt(req.query?.limit || 5)
+    const limit = parseInt(req.query?.limit || 10)
 
     const queryParams = req.query?.query || '' //query=price,5
     const query = {}
@@ -23,8 +23,14 @@ router.get('/', async (req, res) => {
         query[field] = value
     }
     //*************************************** */
+
+    const sortOrder = req.query?.sort
+    console.log("aca el sort")
+    
+
     const result = await productModel.paginate(query, {
         page,
+        sort: { 'price': sortOrder === 'desc' ? -1 : 1 }, 
         limit,
         lean: true // Pasar a formato JSON
     })
@@ -33,7 +39,17 @@ router.get('/', async (req, res) => {
     result.nextLink = result.hasNextPage ? `/?page=${result.nextPage}&limit=${limit}` : ''
 
     console.log(result)
-
+    const objetoPedido = { status: "success" , 
+    payload: result.docs, 
+    totalPages:result.totalPages,
+    prevPage:result.prevPage,
+    nextPage:result.nextPage,
+    page:result.page,
+    hasPrevPage:result.hasPrevPage,
+    hasNextPage:result.hasNextPage,
+    prevLink:result.prevLink,
+    nextLink:result.nextLink,
+    } 
     res.render('home', result)
     //const products = await productModel.find().lean().exec()
     //res.render('home', { products })    
