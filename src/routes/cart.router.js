@@ -1,8 +1,11 @@
 import { Router } from 'express'
 import cartModel from "../DAO/mongoManager/models/cartModel.js";
+import productModel from "../DAO/mongoManager/models/productModel.js";
+import CartDbManager from "../DAO/FileManager/cartDb.manager.js";
+import mongoose from "mongoose";
 
 const router = Router()
-//const cartManager = new CartManager()
+const cartDbManager = new CartDbManager()
 
 /*router.get('/', async (req, res) => {
    // const result = await cartManager.list()
@@ -40,10 +43,14 @@ router.post('/:cid/products/:pid', async (req, res) => {
         const cid = req.params.cid 
     
         try{
-            const resultDelCarrito = await cartModel.find({ _id: cid }).exec();
+            const resultDelCarrito = await cartModel.findById(cid);
+            const resultDelProducto = await productModel.findById(pid);
+            
+            
             console.log(resultDelCarrito)
-            resultDelCarrito[0].products.push(pid)
-            const result = await cartModel.findByIdAndUpdate (cid, {products: resultDelCarrito[0].products}) 
+            console.log(resultDelProducto)
+            resultDelCarrito.products.push(resultDelProducto)
+            const result = await resultDelCarrito.save()
             
             console.log(result)
             res.send(result)
@@ -58,23 +65,43 @@ router.post('/:cid/products/:pid', async (req, res) => {
 router.delete('/:cid/products/:pid', async (req, res) => {
     const pid = req.params.pid
     const cid = req.params.cid 
-     
+
     try{
-        /*const resultDelCarrito = await cartModel.find({ _id: cid }).exec();
-        //resultDelCarrito = await cartModel.find({ id: resultDelCarrito._id }).exec();
-        
-        //await cartModel.deleteOne({ cid: pid })
+   
 
-        console.log (resultDelCarrito)*/
+        let result = await cartDbManager.deleteProductById(cid, pid)
 
-        let result = await cartModel.deleteProductById(cid, pd)
-        if (result.modifiedCount === 0) return res.send("Producto no encontrado")
-
-        //res.send({ status: "sucess", payload: result })
+        if (result === null) return res.send("Producto no encontrado")
+        res.send({ status: "sucess", payload: result })
     } catch (err) {
         res.send({ status: "failed", error: err })
     }        
 })
+
+router.put('/:cid/products/:pid', async (req, res) => {
+  
+    const pid = req.params.pid
+    const cid = req.params.cid 
+
+    try{
+        const resultDelCarrito = await cartModel.findById(cid);
+        const resultDelProducto = await productModel.findById(pid);
+        
+        
+        console.log(resultDelCarrito)
+        console.log(resultDelProducto)
+        resultDelCarrito.products.push(resultDelProducto)
+        const result = await resultDelCarrito.save()
+        
+        console.log(result)
+        res.send(result)
+     }catch (err) {
+         console.log(err)
+         res.send(err)
+
+ }   
+}) 
+
 
 
 export default router
