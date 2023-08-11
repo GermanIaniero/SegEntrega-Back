@@ -33,15 +33,14 @@ router.post('/:cid/products/:pid', async (req, res) => {
   
         const pid = req.params.pid
         const cid = req.params.cid 
-    
+        const quantity = parseInt(req.body.quantity)
         try{
-            const resultDelCarrito = await cartModel.findById(cid);
+            let resultDelCarrito = await cartModel.findById(cid);
             const resultDelProducto = await productModel.findById(pid);
             /* hacer push del id y no del producto */
+            if (!resultDelProducto || !resultDelCarrito) res.status(404).send("No existe producto o carrito");
+            resultDelCarrito.products.push({pid,quantity} )
             
-            console.log(resultDelCarrito)
-            console.log(resultDelProducto)
-            resultDelCarrito.products.push(resultDelProducto)
             const result = await resultDelCarrito.save()
             
             console.log(result)
@@ -74,15 +73,20 @@ router.put('/:cid/products/:pid', async (req, res) => {
   
     const pid = req.params.pid
     const cid = req.params.cid 
+    const quantity = req.body.quantity
 
     try{
-        const resultDelCarrito = await cartModel.findById(cid);
+        const resultDelCarrito = await cartModel.findOne({_id:cid});
+        console.log(resultDelCarrito)
+        if (!resultDelCarrito) res.status(404).send("No existe carrito"); 
         
-        resultDelCarrito.products.push(resultDelProducto)
+        let product = resultDelCarrito.products.find(product=>product===pid)
+        product.quantity = quantity
+        
         const result = await resultDelCarrito.save()
         
         console.log(result)
-        res.send(result)
+        res.send("Carrito Actualizado")
      }catch (err) {
          console.log(err)
          res.send(err)
