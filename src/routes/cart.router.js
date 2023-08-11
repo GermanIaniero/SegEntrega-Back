@@ -6,15 +6,7 @@ import mongoose from "mongoose";
 
 const router = Router()
 const cartDbManager = new CartDbManager()
-
-/*router.get('/', async (req, res) => {
-   // const result = await cartManager.list()
-    //res.send(result)
-    const carts = await cartModel.find().lean().exec()
-    console.log(carts)
-    res.render('cart', { carts }) 
-}) */
-
+///////////trae todos los caritto del cart
 router.get('/', async (req, res) => {
     // const result = await cartManager.list()
      //res.send(result)
@@ -45,7 +37,7 @@ router.post('/:cid/products/:pid', async (req, res) => {
         try{
             const resultDelCarrito = await cartModel.findById(cid);
             const resultDelProducto = await productModel.findById(pid);
-            
+            /* hacer push del id y no del producto */
             
             console.log(resultDelCarrito)
             console.log(resultDelProducto)
@@ -85,11 +77,7 @@ router.put('/:cid/products/:pid', async (req, res) => {
 
     try{
         const resultDelCarrito = await cartModel.findById(cid);
-        const resultDelProducto = await productModel.findById(pid);
         
-        
-        console.log(resultDelCarrito)
-        console.log(resultDelProducto)
         resultDelCarrito.products.push(resultDelProducto)
         const result = await resultDelCarrito.save()
         
