@@ -35,16 +35,25 @@ router.post('/:cid/products/:pid', async (req, res) => {
         const cid = req.params.cid 
         const quantity = parseInt(req.body.quantity)
         try{
-            let resultDelCarrito = await cartModel.findById(cid);
-            const resultDelProducto = await productModel.findById(pid);
+            let resultDelCarrito = await cartModel.findOne({_id:cid});
+            const resultDelProducto = await productModel.findOne({_id:pid});
             /* hacer push del id y no del producto */
             if (!resultDelProducto || !resultDelCarrito) res.status(404).send("No existe producto o carrito");
-            resultDelCarrito.products.push({pid,quantity} )
             
-            const result = await resultDelCarrito.save()
             
-            console.log(result)
-            res.send(result)
+            const resultadoEncontrado = resultDelCarrito.products.find((producto) => producto.pid.toString() === pid)
+            if (!resultadoEncontrado) {
+                resultDelCarrito.products.push({pid,quantity} )
+                await resultDelCarrito.save()
+            }else{
+                resultadoEncontrado.quantity+=quantity
+                await resultDelCarrito.save()
+
+            }    
+            //resultDelCarrito.products.push({pid,quantity} )
+            
+            console.log(resultDelCarrito)
+            res.send(resultDelCarrito)
          }catch (err) {
              console.log(err)
              res.send(err)
@@ -69,6 +78,21 @@ router.delete('/:cid/products/:pid', async (req, res) => {
     }        
 })
 
+router.delete('/:cid', async (req, res) => {
+    
+    const cid = req.params.cid 
+
+    try{
+   
+
+        let result = await cartDbManager.deleteProductAll(cid)
+
+        res.send({ status: "sucess", payload: result })
+    } catch (err) {
+        res.send({ status: "failed", error: err })
+    }        
+})
+
 router.put('/:cid/products/:pid', async (req, res) => {
   
     const pid = req.params.pid
@@ -76,11 +100,14 @@ router.put('/:cid/products/:pid', async (req, res) => {
     const quantity = req.body.quantity
 
     try{
+
+
         const resultDelCarrito = await cartModel.findOne({_id:cid});
         console.log(resultDelCarrito)
+
         if (!resultDelCarrito) res.status(404).send("No existe carrito"); 
         
-        let product = resultDelCarrito.products.find(product=>product===pid)
+        let product = resultDelCarrito.products.find((producto) => producto.pid.toString() === pid)
         product.quantity = quantity
         
         const result = await resultDelCarrito.save()
