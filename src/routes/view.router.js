@@ -1,6 +1,7 @@
 import { Router } from "express";
 //import ProductManager from '../manager/product.manager.js'
 import productModel from "../DAO/mongoManager/models/productModel.js";
+import cartModel from "../DAO/mongoManager/models/cartModel.js";
 import chatModel from "../DAO/mongoManager/models/modelMessage.js"
 
 const router = Router()
@@ -62,6 +63,14 @@ router.get('/realTimeProducts', async (req, res) => {
 
 router.get('/form-products', async (req, res) => {
     res.render('form', {})
+})
+
+router.get('/cartdetail/:cid', async (req, res) => {
+    const cartId= req.params.cid
+     const carts = await cartModel.findOne({_id:cartId}).populate('products.pid').lean().exec()
+     console.log(carts)
+     res.render('cartDetail', {carts})
+    
 })
 
 router.get('/chat', async (req, res) => {

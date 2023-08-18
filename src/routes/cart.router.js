@@ -15,6 +15,15 @@ router.get('/', async (req, res) => {
      res.send(carts) 
  })
 
+ router.get('/:cid', async (req, res) => {
+    const cartId= req.params.cid
+    // const result = await cartManager.list()
+     //res.send(result)
+     const carts = await cartModel.find({_id:cartId}).populate('products.pid')
+     console.log(carts)
+     res.send(carts) 
+ })
+
 router.post('/', async (req, res) => {
    try {
 
@@ -61,6 +70,50 @@ router.post('/:cid/products/:pid', async (req, res) => {
      }   
  }) 
 
+//aca
+router.post('/cart', async (req, res) => {
+    const pid = req.params.pid
+    const quantity = req.body.quantity
+    
+    try {
+ 
+    
+     const result = await cartModel.create({_id:pid, quantity})
+     console.log(result)
+     res.send(result)
+     }catch (err) {
+         console.log(err)
+         res.send(err)
+ 
+     }   
+ }) 
+
+ router.get('/cart/:pid', async (req, res) => {
+    const pid = req.params.pid
+    const cid = req.params.cid 
+    const quantity = req.body.quantity || 1
+    
+    try {
+ 
+        const resultDelCarrito = await cartModel.findOne({_id:cid});
+        console.log(resultDelCarrito)
+
+        if (!resultDelCarrito) res.status(404).send("No existe carrito"); 
+    
+        //let product = resultDelCarrito.products.find((producto) => producto.pid.toString() === pid)
+        resultDelCarrito.products.push({ id: pid, quantity })
+
+        const result = await resultDelCarrito.save()
+
+        console.log(result)
+        res.send("Carrito Actualizado")
+
+     }catch (err) {
+         console.log(err)
+         res.send(err)
+ 
+     }   
+ }) 
 
 router.delete('/:cid/products/:pid', async (req, res) => {
     const pid = req.params.pid
