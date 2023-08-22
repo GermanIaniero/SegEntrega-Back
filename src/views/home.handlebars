@@ -38,7 +38,7 @@
                  <p class="card-text">{{this.price}}</p>
                 <p class="card-text">{{this.description}}</p>
                 <button type="button" class="btn btn-primary">Info</button>
-                <button type="button" id={{this.id}} class="btn btn-secondary">Agregar al Carrito</button>
+                <button type="button" onclick='agregarCart("{{this.id}}")' id={{this.id}} class="btn btn-secondary">Agregar al Carrito</button>
             </div>
         </div>
         {{/if}}
@@ -53,4 +53,46 @@
             <a href="{{nextLink}}"><p style="text-align:center">Siguiente </p></a>
         {{/if}}
     </div>
-</div>    
+</div> 
+<script>
+        let agregarCart=(id)=> {
+
+
+            fetch(`/cart/64cd58c1b1cc42afb4c010ff/products/${id}`,{
+                    method: "POST",
+                    headers: {
+                    "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ quantity: 1 }),
+                    })
+
+.then((response) => {response.json() 
+
+console.log(response)
+
+
+})
+    
+
+.catch((error) => {
+    console.log(error)
+
+})
+
+        }
+
+
+
+       
+            
+        document.getElementById('form').onsubmit = (e) => {
+            e.preventDefault()
+            const limit = document.getElementById('query-limit').value
+            const page = document.getElementById('query-page').value
+
+            const url = `/list?limit=${limit}&page=${page}`
+            
+            window.location.href = url
+        }
+    
+</script>   
